@@ -53,55 +53,72 @@ namespace AptekaProject
 
         private void register_btn_Click(object sender, EventArgs e)
         {
+            // Перевірка на порожні поля
+            // Якщо користувач не заповнив логін, пароль або підтвердження пароля, показуємо повідомлення про помилку
             if (register_username.Text == "" || register_password.Text == "" || register_confirmPassword.Text == "")
             {
-                MessageBox.Show("Empty fields", "Error Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Порожні поля", "Повідомлення про помилку", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
+                // Підключення до бази даних
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    connection.Open();
+                    connection.Open(); // Відкриваємо з'єднання з базою даних
+
+                    // Запит для перевірки наявності логіна в базі даних
                     string checkUsernQuery = "SELECT * FROM users WHERE username = @usern";
 
                     using (SqlCommand checkUsern = new SqlCommand(checkUsernQuery, connection))
                     {
+                        // Додаємо параметр для запиту, замінюючи @usern на введений логін
                         checkUsern.Parameters.AddWithValue("@usern", register_username.Text.Trim());
 
-                        SqlDataAdapter adapter = new SqlDataAdapter(checkUsern);
-                        DataTable table = new DataTable();
+                        SqlDataAdapter adapter = new SqlDataAdapter(checkUsern); // Створюємо адаптер для запиту
+                        DataTable table = new DataTable(); // Створюємо таблицю для зберігання результатів
 
-                        adapter.Fill(table);
+                        adapter.Fill(table); // Заповнюємо таблицю результатами запиту
 
+                        // Перевірка, чи існує вже введений логін у базі даних
                         if (table.Rows.Count != 0)
                         {
+                            // Формуємо рядок з логіном, перше слово з великої букви
                             string tempUsern = register_username.Text.Substring(0, 1).ToUpper() + register_username.Text.Substring(1);
                             MessageBox.Show(tempUsern + " - Цей логін вже використовується", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
+                        // Перевірка довжини пароля
                         else if (register_password.Text.Length < 8)
                         {
-                            MessageBox.Show("Пароль має бути не меньше 8 символів", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            // Якщо пароль менше 8 символів, показуємо повідомлення про помилку
+                            MessageBox.Show("Пароль має бути не менше 8 символів", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         else
                         {
+                            // Запит для додавання нового користувача в базу даних
                             string insertData = "INSERT INTO users (username, password, role, status, date_register) " +
-                                "VALUES(@usern, @pass, @role, @status, @date)"; 
-                            
-                            using(SqlCommand cmd = new SqlCommand(insertData, connection))
+                                "VALUES(@usern, @pass, @role, @status, @date)";
+
+                            using (SqlCommand cmd = new SqlCommand(insertData, connection))
                             {
+                                // Додаємо параметри для запиту на вставку
                                 cmd.Parameters.AddWithValue("@usern", register_username.Text.Trim());
                                 cmd.Parameters.AddWithValue("@pass", register_password.Text.Trim());
-                                cmd.Parameters.AddWithValue("@role", "Cashier");
-                                cmd.Parameters.AddWithValue("@status", "Approval");
+                                cmd.Parameters.AddWithValue("@role", "Cashier"); // Роль користувача
+                                cmd.Parameters.AddWithValue("@status", "Approval"); // Статус користувача
 
-                                DateTime today = DateTime.Today;
+                                DateTime today = DateTime.Today; // Дата реєстрації
                                 cmd.Parameters.AddWithValue("@date", today);
+
+                                // Виконуємо запит на вставку нового користувача в базу даних
                                 cmd.ExecuteNonQuery();
+
+                                // Повідомляємо про успішну реєстрацію
                                 MessageBox.Show("Успішна реєстрація!", "Повідомлення", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                                Form1 loginForm = new Form1();
-                                loginForm.Show();
-                                this.Hide();
+                                // Перехід на форму входу
+                                Form1 loginForm = new Form1(); // Створюємо новий екземпляр форми входу
+                                loginForm.Show(); // Відкриваємо форму входу
+                                this.Hide(); // Приховуємо поточну форму реєстрації
                             }
                         }
                     }
