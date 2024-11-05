@@ -64,7 +64,9 @@ namespace AptekaProject
 
         private void login_registerBtn_Click(object sender, EventArgs e)
         {
-
+            RegisterForm regForm = new RegisterForm();              //Функціонал переходу на форму реєстрацції
+            regForm.Show();
+            this.Hide();
         }
     }
 }
