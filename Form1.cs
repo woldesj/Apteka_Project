@@ -7,11 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SqlClient;
+
 
 namespace AptekaProject
 {
     public partial class Form1 : Form
     {
+        string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Admin\source\repos\AptekaProject\AptekaProject\Database\aptekasql.mdf;Integrated Security=True;Connect Timeout=30"; //Було створено та підключено локальну базу данних
+
         public Form1()
         {
             InitializeComponent();
@@ -54,7 +58,41 @@ namespace AptekaProject
 
         private void login_btn_Click(object sender, EventArgs e)
         {
+            if (login_username.Text == "" || login_password.Text == "")
+            {
+                MessageBox.Show("Empty fields", "Error Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
 
+                    string selectData = "SELECT * FROM users WHERE username = @usern AND password = @pass AND status = 'Active'";
+
+                    using (SqlCommand cmd = new SqlCommand(selectData, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@usern", login_username.Text.Trim());
+                        cmd.Parameters.AddWithValue("@pass", login_password.Text.Trim());
+
+                        SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                        DataTable table = new DataTable();
+
+                        adapter.Fill(table);
+
+                        if (table.Rows.Count > 0)
+                        {
+                            MessageBox.Show("Успех", "Error Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+
+                        }
+                        else
+                        {
+                            MessageBox.Show("Неправильний логін або пароль", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+            }
         }
 
         private void label4_Click(object sender, EventArgs e)
